@@ -1,0 +1,1 @@
+[{"__type__":"cc.SpriteFrame","content":{"name":"Boom","texture":"e9iutQz2RBYaqTFR6elX7a","rect":[1,1,200,200],"offset":[0,0],"originalSize":[200,200]}},{"__type__":"cc.SpriteAtlas","_name":"BoomParticle.plist","_spriteFrames":{"Boom":{"__uuid__":"16y1X04w9IfK7hrTMW5jJf"}}}]

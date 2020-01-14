@@ -1,0 +1,1 @@
+[{"__type__":"cc.SpriteFrame","content":{"name":"LevelUp","texture":"f3j+fNQHRHxY32LOZjgSfM","rect":[1,1,16,30],"offset":[0,0],"originalSize":[16,30]}},{"__type__":"cc.SpriteAtlas","_name":"LevelUpParticle.plist","_spriteFrames":{"LevelUp":{"__uuid__":"84SYnlHhVNLY2QdNOBNYQi"}}}]

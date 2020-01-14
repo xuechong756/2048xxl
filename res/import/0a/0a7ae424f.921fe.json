@@ -1,0 +1,1 @@
+[{"__type__":"cc.SpriteFrame","content":{"name":"CutCrash","texture":"044qfXjCZJW6cEB5pQ591l","rect":[1,1,42,23],"offset":[0,0],"originalSize":[42,23]}},{"__type__":"cc.SpriteAtlas","_name":"CutCrashParticle.plist","_spriteFrames":{"CutCrash":{"__uuid__":"7dDy6GW69HLqujIbFw/2jt"}}}]
