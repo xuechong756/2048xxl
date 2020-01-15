@@ -1499,8 +1499,10 @@ require = function o(a, c, r) {
 
 				//埋点 检测激励
 				this.TimeCheckAd = setInterval(function(){
-					//changeCard.active = 0;
-				    //cut.active = 0;
+					window.h5api && window.h5api.canPlayAd(function(data){
+						changeCard.active = data.canPlayAd;
+						cut.active = changeCard.active;
+					}.bind(this));
 				}, 500);
 				this.skinsNew = cc.sys.localStorage.getItem("SkinNew");
 				this.skinsNew = JSON.parse(this.skinsNew);
@@ -2423,13 +2425,108 @@ require = function o(a, c, r) {
                 recomNode.runAction(action);
                 recomNode.on(cc.Node.EventType.TOUCH_START, function(){
                     //埋点 推荐更多好玩
-                    console.log("more game");
-					
+                    //console.log("more game");
+					window.h5api && window.h5api.showRecommend();
                 }, this);	
 				
 				console.log(this.node);
             },
             start: function() {},
+			dialogConfirm:function(infor, enterFun, cancelFun, viewNode){
+				var markNode = new cc.Node();
+				var graphics = markNode.addComponent(cc.Graphics);
+				let _canvas = cc.Canvas.instance;
+				let _rateR = _canvas.designResolution.height/_canvas.designResolution.width;
+				var winWidth = cc.Canvas.instance.node.height/_rateR;
+				var winHeight = cc.Canvas.instance.node.height;
+				markNode.width = winWidth;
+				markNode.height = winHeight;
+				graphics.rect(-winWidth/2, -winHeight/2,winWidth, winHeight);
+				graphics.fillColor = new cc.Color(0, 0, 0, 125);
+				graphics.fill();
+				var dialogNode = new cc.Node();
+				var dialoagGrap = dialogNode.addComponent(cc.Graphics);
+				var x = winWidth/3;
+				
+				var dialongWinWith = winWidth - x;
+				var dialongWinHeight = dialongWinWith * 0.618;
+				var y = - (dialongWinHeight/2);
+				dialoagGrap.rect(-x, y , dialongWinWith, dialongWinHeight);
+				dialoagGrap.fillColor = new cc.Color(255, 255, 255, 255);
+				dialoagGrap.fill();
+				
+				//title
+				var titleNode = new cc.Node();
+				titleNode.color = new cc.Color(0, 0, 0, 255);
+				var titleLabel = titleNode.addComponent(cc.Label);
+				titleLabel.fontSize = 40;
+				titleLabel.lineHeight = titleLabel.fontSize;
+				titleNode.y = dialongWinHeight/2 - titleLabel.lineHeight;
+				titleLabel.string = "提示";
+				dialogNode.addChild(titleNode);
+				
+				//infor
+				var inforNode = new cc.Node();
+				inforNode.color = new cc.Color(0, 0, 0, 255);
+				var inforLabel = inforNode.addComponent(cc.Label);
+				inforLabel.fontSize = 30;
+				inforLabel.lineHeight = inforLabel.fontSize;
+				inforNode.y += inforLabel.lineHeight;
+				inforLabel.string = infor;
+				dialogNode.addChild(inforNode);
+				
+				//button left
+				var btnLeftNode = new cc.Node();
+				btnLeftNode.color = new cc.Color(0, 0, 0, 255);
+				
+				var btnLeft = btnLeftNode.addComponent(cc.Label);
+				btnLeft.string = "关闭";
+				btnLeft.fontSize = 30;
+				btnLeft.lineHeight = btnLeft.fontSize;
+				btnLeftNode.x = -dialongWinWith/4 ;
+				btnLeftNode.y = -dialongWinHeight/4 ;
+				dialogNode.addChild(btnLeftNode);
+				
+				function cancelCallback(e){
+					console.log("cancel");
+					markNode.destroy();
+					if(cancelFun){
+						cancelFun();
+					}
+				}
+				btnLeftNode.on(cc.Node.EventType.TOUCH_END, cancelCallback, this);
+				
+				//button right 
+				var btnRightNode = new cc.Node();
+				btnRightNode.color = new cc.Color(0, 0, 0, 255);
+				var btnRight = btnRightNode.addComponent(cc.Label);
+				btnRight.string = "登录";
+				btnRight.fontSize = btnLeft.fontSize + 10;
+				btnRight.lineHeight = btnRight.fontSize;
+				btnRightNode.x = dialongWinWith/4 ;
+				btnRightNode.y = -dialongWinHeight/4;
+				dialogNode.addChild(btnRightNode);
+				function enterCallback(e){
+					console.log("enter");
+					markNode.destroy();
+					if(enterFun){
+						enterFun();
+					}
+				}
+				btnRightNode.on(cc.Node.EventType.TOUCH_END, enterCallback, this);
+				
+				
+				markNode.addComponent(cc.BlockInputEvents);
+				markNode.addChild(dialogNode);
+				markNode.zIndex = cc.macro.MAX_ZINDEX;
+				if(viewNode){
+					viewNode.addChild(markNode);
+				}else{
+					var can = cc.director.getScene().getChildByName("Canvas");
+					
+					can.addChild(markNode);
+				}
+			},	
             menuClick: function(t, e) {
                 soundManager.playSound("btnClick");
 				if("rank" == e){
@@ -2437,12 +2534,20 @@ require = function o(a, c, r) {
 					viewManager.popView("RankView", !0, function(t) {}
 					.bind(this)));*/
 					//埋点 排行榜
-					console.log("show ranking");
+					//console.log("show ranking");
+					if (window.h5api && window.h5api.isLogin()) {
+					 window.h5api.showRanking();
+					} else{
+						this.dialogConfirm("登录后才能看到好友哦~", function(){
+							window.h5api && window.h5api.login(function (obj) { });
+						}, function(){});
+					}
 				}else if("share" == e){
 					/*(SDK().fbEvent("clickshareBtn", 1),
 					gameApplication.onShareBtnClick(null, 3))*/
 					//埋点 分享
-					console.log("show share");
+					//console.log("show share");
+					window.h5api && window.h5api.share();
 				}else if("begin" == e){
 					(SDK().fbEvent("clickplayBtn", 1),
 					viewManager.showView("GameView", !0, !0),
@@ -4475,7 +4580,19 @@ require = function o(a, c, r) {
         h.prototype.showVideoAd = function(e, i) {
 			//埋点 激励回调。 完整激励 e&&e(1); 失败：e&&e(0);
 			console.log("root video");
-			e && e(1);
+			this.dialogConfirm("使用激励获得相应奖励?", function(){
+					window.h5api && window.h5api.playAd(function(obj){
+						console.log('代码:' + obj.code + ',消息:' + obj.message);
+						if (obj.code === 10000) {
+							console.log('开始播放');
+						} else if (obj.code === 10001) {
+							e && e(1);
+						} else {
+							console.log('广告异常');
+						}
+					}.bind(this));
+				}, function(){});
+			
            /* "undefined" != typeof FBInstant ? null != this.videoAd[i] ? (console.log("show video ad start"),
             this.videoAd[i].showAsync().then(function() {
                 this.videoAdState[i] = a,
@@ -4492,6 +4609,101 @@ require = function o(a, c, r) {
             this.loadVideoAd(i)) : e && e(!0)*/
         }
         ,
+		 h.prototype.dialogConfirm = function(infor, enterFun, cancelFun, viewNode){
+				var markNode = new cc.Node();
+				var graphics = markNode.addComponent(cc.Graphics);
+				let _canvas = cc.Canvas.instance;
+				let _rateR = _canvas.designResolution.height/_canvas.designResolution.width;
+				var winWidth = cc.Canvas.instance.node.height/_rateR;
+				var winHeight = cc.Canvas.instance.node.height;
+				markNode.width = winWidth;
+				markNode.height = winHeight;
+				graphics.rect(-winWidth/2, -winHeight/2,winWidth, winHeight);
+				graphics.fillColor = new cc.Color(0, 0, 0, 125);
+				graphics.fill();
+				var dialogNode = new cc.Node();
+				var dialoagGrap = dialogNode.addComponent(cc.Graphics);
+				var x = winWidth/3;
+				
+				var dialongWinWith = winWidth - x;
+				var dialongWinHeight = dialongWinWith * 0.618;
+				var y = - (dialongWinHeight/2);
+				dialoagGrap.rect(-x, y , dialongWinWith, dialongWinHeight);
+				dialoagGrap.fillColor = new cc.Color(255, 255, 255, 255);
+				dialoagGrap.fill();
+				
+				//title
+				var titleNode = new cc.Node();
+				titleNode.color = new cc.Color(0, 0, 0, 255);
+				var titleLabel = titleNode.addComponent(cc.Label);
+				titleLabel.fontSize = 40;
+				titleLabel.lineHeight = titleLabel.fontSize;
+				titleNode.y = dialongWinHeight/2 - titleLabel.lineHeight;
+				titleLabel.string = "提示";
+				dialogNode.addChild(titleNode);
+				
+				//infor
+				var inforNode = new cc.Node();
+				inforNode.color = new cc.Color(0, 0, 0, 255);
+				var inforLabel = inforNode.addComponent(cc.Label);
+				inforLabel.fontSize = 30;
+				inforLabel.lineHeight = inforLabel.fontSize;
+				inforNode.y += inforLabel.lineHeight;
+				inforLabel.string = infor;
+				dialogNode.addChild(inforNode);
+				
+				//button left
+				var btnLeftNode = new cc.Node();
+				btnLeftNode.color = new cc.Color(0, 0, 0, 255);
+				
+				var btnLeft = btnLeftNode.addComponent(cc.Label);
+				btnLeft.string = "否";
+				btnLeft.fontSize = 30;
+				btnLeft.lineHeight = btnLeft.fontSize;
+				btnLeftNode.x = -dialongWinWith/4 ;
+				btnLeftNode.y = -dialongWinHeight/4 ;
+				dialogNode.addChild(btnLeftNode);
+				
+				function cancelCallback(e){
+					console.log("cancel");
+					markNode.destroy();
+					if(cancelFun){
+						cancelFun();
+					}
+				}
+				btnLeftNode.on(cc.Node.EventType.TOUCH_END, cancelCallback, this);
+				
+				//button right 
+				var btnRightNode = new cc.Node();
+				btnRightNode.color = new cc.Color(0, 0, 0, 255);
+				var btnRight = btnRightNode.addComponent(cc.Label);
+				btnRight.string = "是";
+				btnRight.fontSize = btnLeft.fontSize + 10;
+				btnRight.lineHeight = btnRight.fontSize;
+				btnRightNode.x = dialongWinWith/4 ;
+				btnRightNode.y = -dialongWinHeight/4;
+				dialogNode.addChild(btnRightNode);
+				function enterCallback(e){
+					console.log("enter");
+					markNode.destroy();
+					if(enterFun){
+						enterFun();
+					}
+				}
+				btnRightNode.on(cc.Node.EventType.TOUCH_END, enterCallback, this);
+				
+				
+				markNode.addComponent(cc.BlockInputEvents);
+				markNode.addChild(dialogNode);
+				markNode.zIndex = cc.macro.MAX_ZINDEX;
+				if(viewNode){
+					viewNode.addChild(markNode);
+				}else{
+					var can = cc.director.getScene().getChildByName("Canvas");
+					
+					can.addChild(markNode);
+				}
+			},	
         h.prototype.getSelfInfo = function() {
             if ("undefined" == typeof FBInstant) {
                 Math.random();
@@ -4504,7 +4716,10 @@ require = function o(a, c, r) {
         ,
         h.prototype.setRankScore = function(t, e, i, n) {
 			//埋点 上报分数
-			console.log("score:" + e);
+			//console.log("score:" + e);
+			if (window.h5api && window.h5api.isLogin()) {
+                window.h5api.submitRanking(e, function (data) { });
+            }
 			
             if ("undefined" == typeof FBInstant)
                 console.log("set rank fail");
