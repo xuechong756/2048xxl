@@ -2406,12 +2406,52 @@ require = function o(a, c, r) {
             extends: cc.Component,
             properties: {},
             onLoad: function() {
-                window.mainScript = this
+                window.mainScript = this;
+				
+				var begin = cc.find("Begin", this.node);
+				
+				var recomNode = new cc.Node();
+                recomNode.y = begin.y - begin.height;
+                recomNode.x = begin.x;
+				recomNode.parent = begin.parent;
+				var lable = recomNode.addComponent(cc.Label);
+                lable.string = "更多好玩";
+                lable.fontSize = 50;
+                lable.lineHeight = 50;
+				var action = cc.sequence(cc.scaleTo(.5, 1.2), cc.scaleTo(.5, 0.9));
+				action = cc.repeatForever(action);
+                recomNode.runAction(action);
+                recomNode.on(cc.Node.EventType.TOUCH_START, function(){
+                    //埋点 推荐更多好玩
+                    console.log("more game");
+					
+                }, this);	
+				
+				console.log(this.node);
             },
             start: function() {},
             menuClick: function(t, e) {
-                soundManager.playSound("btnClick"),
-                "rank" == e ? (SDK().fbEvent("clickpaihangbangBtn", 1),
+                soundManager.playSound("btnClick");
+				if("rank" == e){
+					/*(SDK().fbEvent("clickpaihangbangBtn", 1),
+					viewManager.popView("RankView", !0, function(t) {}
+					.bind(this)));*/
+					//埋点 排行榜
+					console.log("show ranking");
+				}else if("share" == e){
+					/*(SDK().fbEvent("clickshareBtn", 1),
+					gameApplication.onShareBtnClick(null, 3))*/
+					//埋点 分享
+					console.log("show share");
+				}else if("begin" == e){
+					(SDK().fbEvent("clickplayBtn", 1),
+					viewManager.showView("GameView", !0, !0),
+					viewManager.showView("MainView", !1, !1, null, function() {
+						gameViewScript.gameStart()
+					}
+					.bind(this)))
+				}
+               /* "rank" == e ? (SDK().fbEvent("clickpaihangbangBtn", 1),
                 viewManager.popView("RankView", !0, function(t) {}
                 .bind(this))) : "share" == e ? (SDK().fbEvent("clickshareBtn", 1),
                 gameApplication.onShareBtnClick(null, 3)) : "begin" == e && (SDK().fbEvent("clickplayBtn", 1),
@@ -2419,7 +2459,7 @@ require = function o(a, c, r) {
                 viewManager.showView("MainView", !1, !1, null, function() {
                     gameViewScript.gameStart()
                 }
-                .bind(this)))
+                .bind(this)))*/
             },
             update: function(t) {}
         }),
