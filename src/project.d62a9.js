@@ -851,9 +851,20 @@ require = function o(a, c, r) {
                 e("LanguageData").init(t)
             },
             onGiftBtnClick: function(e, t) {
+<<<<<<< HEAD
                 SDK().showInterstitialAd(function(t) {
                     t ? e(!0) : console.log("没有观看成功")
                 }
+=======
+               /* SDK().showInterstitialAd(function(t) {
+                    t ? e(!0) : console.log("没有观看成功")
+                }
+                .bind(this), t)*/
+				//修改
+				SDK().showVideoAd(function(t1) {
+					 t1 ? (e && e(!0)) : console.log("没有观看成功")
+                }
+>>>>>>> f385a47b8b9a2b464aa1687f7abb64d28fea26a6
                 .bind(this), t)
             },
             onVideoBtnClick: function(e, i) {
@@ -1487,8 +1498,44 @@ require = function o(a, c, r) {
                     soundManager.loadBg(),
                     this.gameStart()
                 }
+<<<<<<< HEAD
                 .bind(this))
             },
+=======
+                .bind(this));
+				
+				var changeCard = cc.find("UIView/Bottom/ChangeCard", this.node);
+				var cut = cc.find("UIView/Bottom/Cut", this.node);
+
+				//埋点 检测激励
+				this.TimeCheckAd = setInterval(function(){
+					//changeCard.active = 0;
+				    //cut.active = 0;
+				}, 500);
+				this.skinsNew = cc.sys.localStorage.getItem("SkinNew");
+				this.skinsNew = JSON.parse(this.skinsNew);
+				cc.game.on(cc.game.EVENT_HIDE, function() {
+					//cc.sys.localStorage.setItem("LevelScore", );
+					cc.sys.localStorage.setItem("change", this.changeCount);
+                    cc.sys.localStorage.setItem("cut", this.cutCount);
+					cc.sys.localStorage.setItem("bestScore", this.bestScore);
+					cc.sys.localStorage.setItem("Skins", JSON.stringify(this.skinsData));
+					cc.sys.localStorage.setItem("SkinNew", JSON.stringify(this.skinsNew));	
+
+					var t = {};
+					t.cardData = this.cardDataList,
+					t.pool = [this.cardPoolCards[0].num, this.cardPoolCards[1].num],
+					t.discard = this.discardCount,
+					t.curScore = this.curScore,
+					t.scoreTime = this.scoreTime;
+					var e = JSON.stringify(t);
+					cc.sys.localStorage.setItem("gameData", e);
+                }.bind(this));
+            },
+			onDestroy:function(){
+				clearInterval(this.TimeCheckAd);
+			},
+>>>>>>> f385a47b8b9a2b464aa1687f7abb64d28fea26a6
 			autoAdapteScreen:function(){
 				// 适配解决方案
 				let _canvas = cc.Canvas.instance;
@@ -1939,6 +1986,7 @@ require = function o(a, c, r) {
             menuClick: function(t, e) {
                 if (this.isFirstShare = !1,
                 soundManager.playSound("btnClick"),
+<<<<<<< HEAD
                 "change" == e)
                     SDK().fbEvent("clickwannengpaiBtn", 1),
                     0 < this.changeCount ? (this.setProp(-1, 0),
@@ -1955,6 +2003,30 @@ require = function o(a, c, r) {
                         this.lightList[0].active = !0)
                     }
                     .bind(this), 0);
+=======
+                "change" == e){
+					SDK().fbEvent("clickwannengpaiBtn", 1);
+					if(0 < this.changeCount){
+						(this.setProp(-1, 0),
+						this.lightList[0].active = !1,
+						this.cardPoolCards[1].num = "X",
+						this.cardPoolCards[1].runAction(cc.sequence(cc.scaleTo(.1, 0, 1), cc.callFunc(function() {
+							this.loadCardSprite("X", this.cardPoolCards[1].getComponent(cc.Sprite))
+						}
+						.bind(this), this), cc.scaleTo(.1, 1))))
+					}else if(this.isFirstShare){
+						(this.isFirstShare = !1,
+						this.setProp(1, 0),
+						gameApplication.onShareBtnClick(function(t) {}
+						.bind(this))) 
+					}else{
+						gameApplication.onVideoBtnClick(function(t) {
+                        t && (this.setProp(1, 0),
+                        this.lightList[0].active = !0)
+						}.bind(this), 0);
+					}
+				}
+>>>>>>> f385a47b8b9a2b464aa1687f7abb64d28fea26a6
                 else if ("cut" == e) {
                     if (this.onCuting)
                         return;
@@ -2364,12 +2436,61 @@ require = function o(a, c, r) {
             extends: cc.Component,
             properties: {},
             onLoad: function() {
+<<<<<<< HEAD
                 window.mainScript = this
             },
             start: function() {},
             menuClick: function(t, e) {
                 soundManager.playSound("btnClick"),
                 "rank" == e ? (SDK().fbEvent("clickpaihangbangBtn", 1),
+=======
+                window.mainScript = this;
+				
+				var begin = cc.find("Begin", this.node);
+				
+				var recomNode = new cc.Node();
+                recomNode.y = begin.y - begin.height;
+                recomNode.x = begin.x;
+				recomNode.parent = begin.parent;
+				var lable = recomNode.addComponent(cc.Label);
+                lable.string = "更多好玩";
+                lable.fontSize = 50;
+                lable.lineHeight = 50;
+				var action = cc.sequence(cc.scaleTo(.5, 1.2), cc.scaleTo(.5, 0.9));
+				action = cc.repeatForever(action);
+                recomNode.runAction(action);
+                recomNode.on(cc.Node.EventType.TOUCH_START, function(){
+                    //埋点 推荐更多好玩
+                    console.log("more game");
+					
+                }, this);	
+				
+				console.log(this.node);
+            },
+            start: function() {},
+            menuClick: function(t, e) {
+                soundManager.playSound("btnClick");
+				if("rank" == e){
+					/*(SDK().fbEvent("clickpaihangbangBtn", 1),
+					viewManager.popView("RankView", !0, function(t) {}
+					.bind(this)));*/
+					//埋点 排行榜
+					console.log("show ranking");
+				}else if("share" == e){
+					/*(SDK().fbEvent("clickshareBtn", 1),
+					gameApplication.onShareBtnClick(null, 3))*/
+					//埋点 分享
+					console.log("show share");
+				}else if("begin" == e){
+					(SDK().fbEvent("clickplayBtn", 1),
+					viewManager.showView("GameView", !0, !0),
+					viewManager.showView("MainView", !1, !1, null, function() {
+						gameViewScript.gameStart()
+					}
+					.bind(this)))
+				}
+               /* "rank" == e ? (SDK().fbEvent("clickpaihangbangBtn", 1),
+>>>>>>> f385a47b8b9a2b464aa1687f7abb64d28fea26a6
                 viewManager.popView("RankView", !0, function(t) {}
                 .bind(this))) : "share" == e ? (SDK().fbEvent("clickshareBtn", 1),
                 gameApplication.onShareBtnClick(null, 3)) : "begin" == e && (SDK().fbEvent("clickplayBtn", 1),
@@ -2377,7 +2498,11 @@ require = function o(a, c, r) {
                 viewManager.showView("MainView", !1, !1, null, function() {
                     gameViewScript.gameStart()
                 }
+<<<<<<< HEAD
                 .bind(this)))
+=======
+                .bind(this)))*/
+>>>>>>> f385a47b8b9a2b464aa1687f7abb64d28fea26a6
             },
             update: function(t) {}
         }),
@@ -4391,7 +4516,14 @@ require = function o(a, c, r) {
         }
         ,
         h.prototype.showVideoAd = function(e, i) {
+<<<<<<< HEAD
             "undefined" != typeof FBInstant ? null != this.videoAd[i] ? (console.log("show video ad start"),
+=======
+			//埋点 激励回调。 完整激励 e&&e(1); 失败：e&&e(0);
+			console.log("root video");
+			e && e(1);
+           /* "undefined" != typeof FBInstant ? null != this.videoAd[i] ? (console.log("show video ad start"),
+>>>>>>> f385a47b8b9a2b464aa1687f7abb64d28fea26a6
             this.videoAd[i].showAsync().then(function() {
                 this.videoAdState[i] = a,
                 e && e(!0),
@@ -4404,7 +4536,11 @@ require = function o(a, c, r) {
             }
             .bind(this))) : (console.log("show video ad Stop"),
             e && e(!1),
+<<<<<<< HEAD
             this.loadVideoAd(i)) : e && e(!0)
+=======
+            this.loadVideoAd(i)) : e && e(!0)*/
+>>>>>>> f385a47b8b9a2b464aa1687f7abb64d28fea26a6
         }
         ,
         h.prototype.getSelfInfo = function() {
@@ -4418,6 +4554,12 @@ require = function o(a, c, r) {
         }
         ,
         h.prototype.setRankScore = function(t, e, i, n) {
+<<<<<<< HEAD
+=======
+			//埋点 上报分数
+			console.log("score:" + e);
+			
+>>>>>>> f385a47b8b9a2b464aa1687f7abb64d28fea26a6
             if ("undefined" == typeof FBInstant)
                 console.log("set rank fail");
             else {
