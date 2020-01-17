@@ -3286,13 +3286,26 @@ require = function o(a, c, r) {
                     this.menuClick(null, "jump")
                 }
                 .bind(this), this);
-            },
-			start:function(){
+				
 				//埋点 激励回调
 				var thisObj = this;
-				window.h5api && window.h5api.canPlayAd(function(data){
-					thisObj.videoBtn.active = data.canPlayAd;
-				}.bind(this));
+				this.TimeCheckAd = setInterval(function(){
+					window.h5api && window.h5api.canPlayAd(function(data){
+						thisObj.videoBtn.active = data.canPlayAd;
+					}.bind(this));
+				}, 500);
+				
+				//修改
+				var textNode = this.shareBtn.getChildByName("Text")
+				textNode.removeComponent(cc.Label);
+				
+				var textLabel = textNode.addComponent(cc.Label);
+				textLabel.string = "分享";
+				console.log(this.shareBtn);
+				console.log(this.node);
+            },
+			onDestroy:function(){
+				clearInterval(this.TimeCheckAd);
 			},
             onEnable: function() {
                 this.timeVal = 10,
