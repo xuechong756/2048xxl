@@ -867,9 +867,10 @@ require = function o(a, c, r) {
                     if (t)
                         null != e && e(!0);
                     else {
-                        console.log("没有观看成功");
+                        /*console.log("没有观看成功");
                         i <= 3 ? this.videoTurnShare(e, 0) : this.fbFail(1),
-                        null != e && e(!1)
+                        null != e && e(!1)*/
+						e && e(!1);
                     }
                 }
                 .bind(this), i)
@@ -1014,11 +1015,12 @@ require = function o(a, c, r) {
             onEnable: function() {
                 SDK().fbEvent("showjiesuanUISuccess", 1),
                 this.bestScoreText.string = gameViewScript.bestScore,
-                this.curScoreText.string = gameViewScript.curScore,
-                this.scheduleOnce(function() {
+                this.curScoreText.string = gameViewScript.curScore;
+				//修改
+               /* this.scheduleOnce(function() {
                     gameApplication.onGiftBtnClick(null, 1)
                 }
-                .bind(this), 1)
+                .bind(this), 1)*/
             },
             menuClick: function(t, e) {
                 soundManager.playSound("btnClick"),
@@ -1495,13 +1497,27 @@ require = function o(a, c, r) {
                 .bind(this));
 				
 				var changeCard = cc.find("UIView/Bottom/ChangeCard", this.node);
+				var borderLight = cc.find("UIView/Bottom/BorderLight", this.node);
 				var cut = cc.find("UIView/Bottom/Cut", this.node);
+				var discard = cc.find("UIView/Bottom/Discard", this.node);
+				
+				var thisObj = this;
 
 				//埋点 检测激励
 				this.TimeCheckAd = setInterval(function(){
 					window.h5api && window.h5api.canPlayAd(function(data){
-						changeCard.active = data.canPlayAd;
-						cut.active = changeCard.active;
+						if(0 == thisObj.changeCount){
+							changeCard.active = data.canPlayAd;
+							if(borderLight.active){
+								borderLight.active = data.canPlayAd;
+							}
+						}
+						if(0 == thisObj.cutCount){
+							cut.active = data.canPlayAd;
+						}
+						if(0 == thisObj.discardCount){
+							discard.active = data.canPlayAd;
+						}
 					}.bind(this));
 				}, 500);
 				this.skinsNew = cc.sys.localStorage.getItem("SkinNew");
@@ -2413,7 +2429,7 @@ require = function o(a, c, r) {
 				var begin = cc.find("Begin", this.node);
 				
 				var recomNode = new cc.Node();
-                recomNode.y = begin.y - begin.height;
+                recomNode.y = begin.y + begin.height;
                 recomNode.x = begin.x;
 				recomNode.parent = begin.parent;
 				var lable = recomNode.addComponent(cc.Label);
@@ -3269,8 +3285,15 @@ require = function o(a, c, r) {
                 this.jumpBtn.on("click", function(t) {
                     this.menuClick(null, "jump")
                 }
-                .bind(this), this)
+                .bind(this), this);
             },
+			start:function(){
+				//埋点 激励回调
+				var thisObj = this;
+				window.h5api && window.h5api.canPlayAd(function(data){
+					thisObj.videoBtn.active = data.canPlayAd;
+				}.bind(this));
+			},
             onEnable: function() {
                 this.timeVal = 10,
                 this.timeText.string = " " + this.timeVal,
@@ -3287,8 +3310,30 @@ require = function o(a, c, r) {
                 0 == this.timeVal && this.menuClick(null, "jump")
             },
             menuClick: function(t, e) {
-                soundManager.playSound("btnClick"),
-                "share" == e ? (SDK().fbEvent("clickshareBtn", 1),
+                soundManager.playSound("btnClick");
+				if("share" == e){
+					//埋点 分享
+					//console.log("show share");
+					window.h5api && window.h5api.share();
+				}else if("video" == e){
+					this.onDisable();
+					(SDK().fbEvent("clickreliveBtn", 1),
+					gameApplication.onVideoBtnClick(function(t) {
+						if(t){
+							(gameViewScript.boomCard(),
+							viewManager.popView("ReviveView", !1))
+						}else{
+							this.schedule(this.countGameTime, 1, 10);
+						}
+					}
+					.bind(this), 3))
+				}else if("jump" == e){
+					(SDK().fbEvent("clickskipBtn", 1),
+					viewManager.popView("ReviveView", !1),
+					gameViewScript.clearData(),
+					gameViewScript.showOver())
+				}
+               /* "share" == e ? (SDK().fbEvent("clickshareBtn", 1),
                 gameApplication.onShareBtnClick(function(t) {
                     t && (gameViewScript.boomCard(),
                     viewManager.popView("ReviveView", !1))
@@ -3301,7 +3346,7 @@ require = function o(a, c, r) {
                 .bind(this), 3)) : "jump" == e && (SDK().fbEvent("clickskipBtn", 1),
                 viewManager.popView("ReviveView", !1),
                 gameViewScript.clearData(),
-                gameViewScript.showOver())
+                gameViewScript.showOver())*/
             },
             update: function(t) {}
         }),
@@ -4437,7 +4482,11 @@ require = function o(a, c, r) {
         }
         ,
         h.prototype.share = function(t, e, i) {
-            if ("undefined" != typeof FBInstant) {
+			//埋点 分享
+			//console.log("show share")
+			window.h5api && window.h5api.share();
+			
+            /*if ("undefined" != typeof FBInstant) {
                 var n = this;
                 FBInstant.context.chooseAsync().then(function() {
                     n.doShare(t, i),
@@ -4446,7 +4495,7 @@ require = function o(a, c, r) {
                     null != t.code && "SAME_CONTEXT" == t.code && null != e && e(!1)
                 })
             } else
-                null != e && e(!0)
+                null != e && e(!0)*/
         }
         ,
         h.prototype.doShare = function(t, e) {
@@ -4588,10 +4637,11 @@ require = function o(a, c, r) {
 						} else if (obj.code === 10001) {
 							e && e(1);
 						} else {
-							console.log('广告异常');
+							//console.log('广告异常');
+							e && e(0);
 						}
 					}.bind(this));
-				}, function(){});
+				}, function(){e && e(0);});
 			
            /* "undefined" != typeof FBInstant ? null != this.videoAd[i] ? (console.log("show video ad start"),
             this.videoAd[i].showAsync().then(function() {
